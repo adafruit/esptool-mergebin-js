@@ -1,0 +1,34 @@
+{
+  "name": "@adafruit/esptool-mergebin-js",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "version": "1.0.0",
+  "description": "A port of ESPTool's merge-bin option for use in JavaScript.",
+  "main": "mergebin.js",
+  "dependencies": {
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/adafruit/esptool-mergebin-js.git"
+  },
+  "keywords": [
+    "ESPTool",
+    "mergebin",
+    "merge",
+    "binary",
+    "merge_bin",
+    "join",
+    "esp32"
+  ],
+  "author": "Melissa LeBlanc-Williams",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/adafruit/esptool-mergebin-js/issues"
+  },
+  "homepage": "https://github.com/adafruit/esptool-mergebin-js#readme"
+}
