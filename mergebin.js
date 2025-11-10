@@ -13,7 +13,7 @@ export class MergeBin {
         this.flashFreq = "keep";
         this.fillFlashSize = null;
         this.targetOffset = 0;
-        this.chipDefs = {"esp32": null, "esp32c3": null, "esp32c6": null, "esp32s3": null, "esp32s2": null, "esp8266": null};
+        this.chipDefs = {"esp32": null, "esp32c3": null, "esp32c5": null, "esp32c6": null, "esp32s3": null, "esp32s2": null, "esp8266": null};
     }
 
     addFile(contents, offset) {
