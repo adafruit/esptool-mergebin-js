@@ -13,7 +13,7 @@ export class MergeBin {
         this.flashFreq = "keep";
         this.fillFlashSize = null;
         this.targetOffset = 0;
-        this.chipDefs = {"esp32": null, "esp32c3": null, "esp32s3": null, "esp32s2": null, "esp8266": null};
+        this.chipDefs = {"esp32": null, "esp32c3": null, "esp32c5": null, "esp32c6": null, "esp32s3": null, "esp32s2": null, "esp8266": null};
     }
 
     addFile(contents, offset) {
@@ -75,31 +75,23 @@ export class MergeBin {
         if (Object.keys(this.chipDefs).includes(chipname) && this.chipDefs[chipname] != null) {
             return this.chipDefs[chipname];
         }
-
-        // Load the chip definition. I wish there was a less awkward way to do this
-        if (chipname == "esp32") {
-            const {ESP32} = await import(`./targets/${chipname}.js`);
-            this.chipDefs[chipname] = new ESP32();
-        } else if (chipname == "esp32c3") {
-            const {ESP32C3} = await import(`./targets/${chipname}.js`);
-            this.chipDefs[chipname] = new ESP32C3();
-        } else if (chipname == "esp32s3") {
-            const {ESP32S3} = await import(`./targets/${chipname}.js`);
-            this.chipDefs[chipname] = new ESP32S3();
-        } else if (chipname == "esp32s2") {
-            const {ESP32S2} = await import(`./targets/${chipname}.js`);
-            this.chipDefs[chipname] = new ESP32S2();
-        } else if (chipname == "esp8266") {
-            const {ESP8266} = await import(`./targets/${chipname}.js`);
-            this.chipDefs[chipname] = new ESP8266();
+    
+        try {
+            // Dynamically import the module based on the chip name
+            const chip_module = await import(`./targets/${chipname}.js`);
+            
+            // Dynamically access the class constructor using bracket notation
+            const ChipClass = chip_module[chipname.toUpperCase()];
+            
+            // Instantiate the chip class and store it in the chipDefs object
+            this.chipDefs[chipname] = new ChipClass();
+        } catch (error) {
+            console.error(`Failed to load chip definition for ${chipname}:`, error);
+            return null;
         }
-
-        // Return the chip definition if it exists
-        if (Object.keys(this.chipDefs).includes(chipname)) {
-            return this.chipDefs[chipname];
-        }
-
-        return null;
+    
+        // Return the chip definition if it was successfully loaded
+        return this.chipDefs[chipname];
     }
 
     _calcBufferSize(inputFiles) {
@@ -132,7 +124,7 @@ export class MergeBin {
 
         let chipClass = await this.loadChip(chip);
         if (!chipClass) {
-            msg = `Invalid chip choice: ${chip}\n (choose from ${Object.keys(this.chipDefs).join(", ")})`;
+            let msg = `Invalid chip choice: ${chip}\n (choose from ${Object.keys(this.chipDefs).join(", ")})`;
             throw new Error(msg);
         }
         // sort the files by offset.
@@ -220,7 +212,7 @@ export class MergeBin {
 
         // easy check if this is an image: does it start with a magic byte?
         if (headerMagic != ESP_IMAGE_MAGIC) {
-            console.log(`Warning: Image file at ${this.toHex(address)} doesn't look like an image file, so not changing any flash settings.`);
+            console.warn(`Warning: Image file at ${this.toHex(address)} doesn't look like an image file, so not changing any flash settings.`);
             return image;
         }
 
@@ -234,7 +226,7 @@ export class MergeBin {
         var shaImpliesKeep = chip != "esp8266" && extendedHeader(15) == 1;
 
         const print_keep_warning = (argToKeep, argUsed) => {
-            console.log(
+            console.warn(
                 `Warning: Image file at ${this.toHex(addr)} is protected with a hash checksum, ` +
                 `so not changing the flash ${argToKeep.toLowerCase()} setting. ` +
                 `Use setFlash${argToKeep}("keep") instead of setFlash${argToKeep}(${argUsed}) ` +
@@ -274,7 +266,7 @@ export class MergeBin {
 
         var flashParams = new Uint8Array([headerFlashMode, flashSize + flashFreq]);
         if (flashParams != headerFlashSizeFreq) {
-            console.log(`Flash params set to ${this.toHex(flashParams[0] << 8 + flashParams[1], 4)}`);
+            // console.log(`Flash params set to ${this.toHex(flashParams[0] << 8 + flashParams[1], 4)}`);
             image.set(flashParams, 3);
         }
 
